@@ -2,19 +2,20 @@ import { StyleSheet, Text, View, Image } from 'react-native'
 import React from 'react'
 import styles from './styles'
 
-const ChatRoomItem = () => {
+const ChatRoomItem = ({ chatRoom }: any) => {
+    const [me, chattingWith,] = chatRoom.users;
     return (
         <View style={styles.container}>
-            <Image source={{ uri: "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/elon.png" }} style={styles.image} />
-            <View style={styles.badgeContainer}>
+            <Image source={{ uri: chattingWith.imageUri }} style={styles.image} />
+            {chatRoom.newMessage && <View style={styles.badgeContainer}>
                 <Text style={styles.badgeText}>2</Text>
-            </View>
+            </View>}
             <View style={styles.rightContainer}>
                 <View style={styles.row}>
-                    <Text style={styles.name}>Elon Musk</Text>
-                    <Text style={styles.text}>11:11 AM</Text>
+                    <Text style={styles.name}>{chattingWith.name}</Text>
+                    <Text style={styles.text}>{chatRoom.lastMessage.createdAt}</Text>
                 </View>
-                <Text numberOfLines={1} style={styles.text}>Hola lorem Hola coca cola vHola lorem Hola coca colaHola lorem Hola coca colaHola lorem Hola coca cola</Text>
+                <Text numberOfLines={1} style={styles.text}>{chatRoom.lastMessage.content}</Text>
             </View>
         </View>
     )
