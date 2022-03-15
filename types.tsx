@@ -16,6 +16,7 @@ declare global {
 export type RootStackParamList = {
   Home: undefined;
   NotFound: undefined;
+  UsersScreen: undefined;
   ChatRoom: { id: any };
 };
 
