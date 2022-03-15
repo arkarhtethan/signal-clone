@@ -9,11 +9,18 @@
       "UnauthRoleName": "amplify-signalclone-staging-141907-unauthRole",
       "StackName": "amplify-signalclone-staging-141907",
       "StackId": "arn:aws:cloudformation:us-east-1:369210920583:stack/amplify-signalclone-staging-141907/8b74b540-a2d8-11ec-9771-0ee03935ac0f",
-      "AmplifyAppId": "d33wnsjtu64tn3"
+      "AmplifyAppId": "d33wnsjtu64tn3",
+      "AuthTriggerTemplateURL": "https://s3.amazonaws.com/amplify-signalclone-staging-141907-deployment/amplify-cfn-templates/auth/auth-trigger-cloudformation-template.json"
     },
     "categories": {
       "auth": {
         "signalclone": {}
+      },
+      "function": {
+        "signalclonePostConfirmation": {
+          "deploymentBucketName": "amplify-signalclone-staging-141907-deployment",
+          "s3Key": "amplify-builds/signalclonePostConfirmation-46797a4d763249774d59-build.zip"
+        }
       }
     }
   }
