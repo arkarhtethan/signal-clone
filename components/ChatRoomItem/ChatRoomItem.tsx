@@ -1,26 +1,51 @@
-import { StyleSheet, Text, View, Image, Pressable } from 'react-native'
-import React from 'react'
-import styles from './styles'
 import { useNavigation } from '@react-navigation/native';
+import { Auth, DataStore } from 'aws-amplify';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
+import { ChatRoomUser, Message, User } from '../../src/models';
+import styles from './styles';
 
 const ChatRoomItem = ({ chatRoom }: any) => {
-    const [me, chattingWith,] = chatRoom.users;
+    // const [me, chattingWith,] = chatRoom.users;
+    const [users, setUsers] = useState<User[]>([]);// all users in this chatrooms
+    const [user, setUser] = useState<User | null>(null);
+    const [lastMessage, setLastMessage] = useState<Message | undefined>(undefined);
     const navigation = useNavigation();
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            const fetchedUsers = (await DataStore.query(ChatRoomUser)).filter(chatRoomUser => chatRoomUser.chatRoom.id === chatRoom.id).map(chatRoomUser => chatRoomUser.user)
+            const authUser = await Auth.currentAuthenticatedUser();
+            setUsers(fetchedUsers);
+            setUser(fetchedUsers.find(user => user.id !== authUser.attributes.sub) || null)
+        }
+        fetchUsers();
+    }, [])
+
+    useEffect(() => {
+        if (!chatRoom.chatRoomLastMessageId) { return; }
+        DataStore.query(Message, chatRoom.chatRoomLastMessageId).then(setLastMessage)
+    }, [])
+
+
     const onPress = () => {
         navigation.navigate("ChatRoom", { id: chatRoom.id })
     }
+    if (!user) {
+        return <ActivityIndicator />
+    }
     return (
         <Pressable onPress={onPress} style={styles.container}>
-            <Image source={{ uri: chattingWith.imageUri }} style={styles.image} />
-            {chatRoom.newMessage && <View style={styles.badgeContainer}>
-                <Text style={styles.badgeText}>2</Text>
+            <Image source={{ uri: user.imageUri }} style={styles.image} />
+            {!!chatRoom.newMessages && <View style={styles.badgeContainer}>
+                <Text style={styles.badgeText}>{chatRoom.newMessages}</Text>
             </View>}
             <View style={styles.rightContainer}>
                 <View style={styles.row}>
-                    <Text style={styles.name}>{chattingWith.name}</Text>
-                    <Text style={styles.text}>{chatRoom.lastMessage.createdAt}</Text>
+                    <Text style={styles.name}>{user.name}</Text>
+                    <Text style={styles.text}>{lastMessage?.createdAt}</Text>
                 </View>
-                <Text numberOfLines={1} style={styles.text}>{chatRoom.lastMessage.content}</Text>
+                <Text numberOfLines={1} style={styles.text}>{lastMessage?.content}</Text>
             </View>
         </Pressable>
     )

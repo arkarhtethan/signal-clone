@@ -1,48 +1,66 @@
-import { StyleSheet, View, FlatList, SafeAreaView, Image, Text, useWindowDimensions } from 'react-native';
-import { RootTabScreenProps } from '../types';
-import Message from '../components/Message';
-import Chats from '../assets/dummy-data/Chats';
-import MessageInput from '../components/MessageInput';
 import { useRoute } from '@react-navigation/native';
-import { useLayoutEffect } from 'react';
-import { Feather } from '@expo/vector-icons';
+import { DataStore, SortDirection } from 'aws-amplify';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, SafeAreaView, StyleSheet, useWindowDimensions } from 'react-native';
+import MessageComponent from '../components/Message';
+import MessageInput from '../components/MessageInput';
+import { ChatRoom, Message } from '../src/models';
+import { RootTabScreenProps } from '../types';
 
 export default function ChatRoomScreen ({ navigation }: RootTabScreenProps<'TabOne'>) {
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
     const route = useRoute();
     const { width } = useWindowDimensions();
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            headerTitle: () => <View style={{ flexDirection: 'row', padding: 10, alignItems: 'center', justifyContent: 'space-between', width: width - 75, marginRight: 10 }}>
-                <Image
-                    source={{ uri: "https://notjustdev-dummy.s3.us-east-2.amazonaws.com/avatars/jeff.jpeg" }}
-                    style={{ width: 30, height: 30, borderRadius: 30, }}
-                />
-                <Text style={{ fontWeight: 'bold' }}>{"ELon"}</Text>
-                <View style={{ flexDirection: "row" }}>
-                    <Feather
-                        name="camera"
-                        size={24}
-                        color="#595959"
-                        style={{ marginHorizontal: 10 }}
-                    />
-                    <Feather
-                        name="edit-2"
-                        size={24}
-                        color="#595959"
-                        style={{}}
-                    />
-                </View>
-            </View >
-        });
-    }, [navigation]);
+
+    const fetchChatRoom = async () => {
+        if (!route?.params?.id) {
+            return;
+        }
+        const chatRoom = await DataStore.query(ChatRoom, route.params.id);
+        if (!chatRoom) {
+        } else {
+            setChatRoom(chatRoom)
+        }
+    }
+
+    const fetchMessages = async () => {
+        if (!chatRoom) {
+            return;
+        }
+        await DataStore.query(Message, message => message.chatroomID("eq", chatRoom?.id), { sort: message => message.createdAt(SortDirection.DESCENDING) }).then(setMessages);
+    }
+
+    useEffect(() => {
+        fetchChatRoom();
+    }, [])
+
+    useEffect(() => {
+        if (!chatRoom) return;
+        fetchMessages();
+    }, [chatRoom])
+
+    useEffect(() => {
+        const subscription = DataStore.observe(Message).subscribe(msg => {
+            if (msg.model === Message && msg.opType === "INSERT") {
+                setMessages(existingMessages => [msg.element, ...existingMessages])
+            }
+        })
+        return () => subscription.unsubscribe();
+    }, [])
+
+    if (!(chatRoom && messages)) {
+        return <ActivityIndicator />
+    }
+
     return (
         <SafeAreaView style={styles.page}>
             <FlatList
-                data={Chats.messages}
-                renderItem={({ item }) => <Message message={item} />}
+                data={messages}
+                renderItem={({ item }) => <MessageComponent message={item} />}
                 inverted
             />
-            <MessageInput />
+            <MessageInput chatRoom={chatRoom} />
         </SafeAreaView>
     );
 }
