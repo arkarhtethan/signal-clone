@@ -1,4 +1,5 @@
 import { DataStore } from '@aws-amplify/datastore';
+import { Auth } from 'aws-amplify';
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import UserItem from '../components/UserItem';
@@ -10,9 +11,12 @@ export default function UsersScreen ({ navigation }: RootTabScreenProps<'TabOne'
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
-    DataStore.query(User).then((data) => {
-      setUsers(data)
-    });
+    (async () => {
+      const authUser = await Auth.currentAuthenticatedUser();
+      const fetchedUsers = (await DataStore.query(User)).filter(user => user.id !== authUser.attributes.sub)
+      setUsers(fetchedUsers)
+    })();
+
   }, [])
   return (
     <View style={styles.page}>
