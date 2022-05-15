@@ -1,5 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import { Auth, DataStore } from 'aws-amplify';
+import moment from "moment";
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, Text, View } from 'react-native';
 import { ChatRoomUser, Message, User } from '../../src/models';
@@ -34,6 +35,9 @@ const ChatRoomItem = ({ chatRoom }: any) => {
     if (!user) {
         return <ActivityIndicator />
     }
+
+    const time = moment(lastMessage?.createdAt).from(moment())
+
     return (
         <Pressable onPress={onPress} style={styles.container}>
             <Image source={{ uri: user.imageUri }} style={styles.image} />
@@ -43,7 +47,7 @@ const ChatRoomItem = ({ chatRoom }: any) => {
             <View style={styles.rightContainer}>
                 <View style={styles.row}>
                     <Text style={styles.name}>{user.name}</Text>
-                    <Text style={styles.text}>{lastMessage?.createdAt}</Text>
+                    <Text style={styles.text}>{time}</Text>
                 </View>
                 <Text numberOfLines={1} style={styles.text}>{lastMessage?.content}</Text>
             </View>
