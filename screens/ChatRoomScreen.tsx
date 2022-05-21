@@ -10,6 +10,7 @@ import { RootTabScreenProps } from '../types';
 export default function ChatRoomScreen ({ navigation }: RootTabScreenProps<'TabOne'>) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
+    const [messageReplyTo, setMessageReplyTo] = useState<Message | null>(null);
     const route = useRoute();
     const { width } = useWindowDimensions();
 
@@ -57,10 +58,10 @@ export default function ChatRoomScreen ({ navigation }: RootTabScreenProps<'TabO
         <SafeAreaView style={styles.page}>
             <FlatList
                 data={messages}
-                renderItem={({ item }) => <MessageComponent message={item} />}
+                renderItem={({ item }) => <MessageComponent message={item} setAsMessageReply={() => setMessageReplyTo(item)} />}
                 inverted
             />
-            <MessageInput chatRoom={chatRoom} />
+            <MessageInput messageReplyTo={messageReplyTo} chatRoom={chatRoom} removeMessageReplyTo={() => setMessageReplyTo(null)} />
         </SafeAreaView>
     );
 }

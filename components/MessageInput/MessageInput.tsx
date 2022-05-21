@@ -3,13 +3,14 @@ import { Auth, DataStore, Storage } from "aws-amplify";
 import { Audio } from "expo-av";
 import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from 'react';
-import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import EmojiSelector from "react-native-emoji-selector";
 import { v4 as uuidv4 } from "uuid";
-import { ChatRoom, Message, MessageStatus } from "../../src/models";
+import { ChatRoom, Message as MessageModel, MessageStatus } from "../../src/models";
 import AudioPlayer from "../AudioPlayer";
+import Message from "../Message/Message";
 
-const MessageInput = ({ chatRoom }: any) => {
+const MessageInput = ({ chatRoom, messageReplyTo, removeMessageReplyTo }: any) => {
     const [message, setMessage] = useState('');
     const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
     const [image, setImage] = useState<string | null>(null);
@@ -37,12 +38,10 @@ const MessageInput = ({ chatRoom }: any) => {
                 allowsRecordingIOS: true,
                 playsInSilentModeIOS: true,
             });
-            console.log('Starting recording..');
             const { recording } = await Audio.Recording.createAsync(
                 Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY
             );
             setRecording(recording);
-            console.log('Recording started');
         } catch (err) {
             console.error('Failed to start recording', err);
         }
@@ -51,7 +50,6 @@ const MessageInput = ({ chatRoom }: any) => {
 
     async function stopRecording () {
         if (!recording) { return; }
-        console.log('Stopping recording..');
         setRecording(undefined);
         await recording.stopAndUnloadAsync();
         await Audio.setAudioModeAsync({
@@ -65,7 +63,7 @@ const MessageInput = ({ chatRoom }: any) => {
 
     const sendMessage = async () => {
         const user = await Auth.currentAuthenticatedUser();
-        const newMessage = await DataStore.save(new Message({ content: message, userID: user.attributes.sub, chatroomID: chatRoom.id }))
+        const newMessage = await DataStore.save(new MessageModel({ content: message, userID: user.attributes.sub, chatroomID: chatRoom.id, replyToMessageID: messageReplyTo?.id }))
         updateLastMessage(newMessage)
         resetField();
     }
@@ -102,7 +100,7 @@ const MessageInput = ({ chatRoom }: any) => {
         const blob = await getBlob(image);
         const { key } = await Storage.put(`${uuidv4()}.png`, blob, { progressCallback });
         const user = await Auth.currentAuthenticatedUser();
-        const newMessage = await DataStore.save(new Message({ content: message, image: key, userID: user.attributes.sub, chatroomID: chatRoom.id }))
+        const newMessage = await DataStore.save(new MessageModel({ content: message, image: key, userID: user.attributes.sub, chatroomID: chatRoom.id, replyToMessageID: messageReplyTo?.id }))
         updateLastMessage(newMessage)
         resetField();
 
@@ -115,13 +113,14 @@ const MessageInput = ({ chatRoom }: any) => {
         const blob = await getBlob(soundURI);
         const { key } = await Storage.put(`${uuidv4()}.${extension}`, blob, { progressCallback });
         const user = await Auth.currentAuthenticatedUser();
-        const newMessage = await DataStore.save(new Message({ content: message, audio: key, userID: user.attributes.sub, chatroomID: chatRoom.id, status: MessageStatus.SENT }))
+        const newMessage = await DataStore.save(new MessageModel({ content: message, audio: key, userID: user.attributes.sub, chatroomID: chatRoom.id, status: MessageStatus.SENT, replyToMessageID: messageReplyTo?.id }))
         updateLastMessage(newMessage)
         resetField();
 
     }
 
     const resetField = () => {
+        removeMessageReplyTo();
         setMessage("");
         setIsEmojiPickerOpen(false);
         setImage(null);
@@ -155,6 +154,16 @@ const MessageInput = ({ chatRoom }: any) => {
 
     return (
         <KeyboardAvoidingView style={[styles.container, { height: isEmojiPickerOpen ? "50%" : "auto" }]}>
+            {messageReplyTo &&
+                <View style={{ backgroundColor: "#f2f2f2", padding: 5, flexDirection: "row", justifyContent: "space-between" }}>
+                    <View style={{ flex: 1 }}>
+                        <Text>Reply to:</Text>
+                        <Message message={messageReplyTo} />
+                    </View>
+                    <Pressable onPress={() => removeMessageReplyTo()}>
+                        <AntDesign name="close" size={24} color="black" style={{ margin: 5 }} />
+                    </Pressable>
+                </View>}
             {image && (
                 <View style={styles.sendImageContainer}>
                     <Image source={{ uri: image }} style={{
