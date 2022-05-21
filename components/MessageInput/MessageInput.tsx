@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import EmojiSelector from "react-native-emoji-selector";
 import { v4 as uuidv4 } from "uuid";
-import { ChatRoom, Message } from "../../src/models";
+import { ChatRoom, Message, MessageStatus } from "../../src/models";
 import AudioPlayer from "../AudioPlayer";
 
 const MessageInput = ({ chatRoom }: any) => {
@@ -115,7 +115,7 @@ const MessageInput = ({ chatRoom }: any) => {
         const blob = await getBlob(soundURI);
         const { key } = await Storage.put(`${uuidv4()}.${extension}`, blob, { progressCallback });
         const user = await Auth.currentAuthenticatedUser();
-        const newMessage = await DataStore.save(new Message({ content: message, audio: key, userID: user.attributes.sub, chatroomID: chatRoom.id }))
+        const newMessage = await DataStore.save(new Message({ content: message, audio: key, userID: user.attributes.sub, chatroomID: chatRoom.id, status: MessageStatus.SENT }))
         updateLastMessage(newMessage)
         resetField();
 
