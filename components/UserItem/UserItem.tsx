@@ -1,25 +1,9 @@
-import { useNavigation } from '@react-navigation/native';
-import { Auth, DataStore } from 'aws-amplify';
+import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { Image, Pressable, Text, View } from 'react-native';
-import { ChatRoom, ChatRoomUser, User } from '../../src/models';
 import styles from './styles';
 
-const UserItem = ({ user }: any) => {
-    const navigation = useNavigation();
-
-    const onPress = async () => {
-        const newChatRoom = await DataStore.save(new ChatRoom({ newMessages: 0 }));
-        const authUser = await Auth.currentAuthenticatedUser();
-        const users = await DataStore.query(User);
-        const dbUser = await DataStore.query(User, authUser.attributes.sub);
-
-        if (dbUser) {
-            await DataStore.save(new ChatRoomUser({ user: dbUser, chatRoom: newChatRoom }));
-        }
-        await DataStore.save(new ChatRoomUser({ user, chatRoom: newChatRoom }));
-        navigation.navigate("ChatRoom", { id: newChatRoom.id })
-    }
+const UserItem = ({ user, onPress, isSelected }: any) => {
 
     return (
         <Pressable onPress={onPress} style={styles.container}>
@@ -29,6 +13,7 @@ const UserItem = ({ user }: any) => {
                     <Text style={styles.name}>{user.name}</Text>
                 </View>
             </View>
+            {isSelected !== undefined && <Feather name={isSelected ? "check-circle" : "circle"} size={20} color="#4f4f4f" />}
         </Pressable>
     )
 }
