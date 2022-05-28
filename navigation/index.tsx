@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as React from 'react';
 import { ColorSchemeName } from 'react-native';
 import ChatRoomScreen from '../screens/ChatRoomScreen';
+import GroupInfoScreen from '../screens/GroupInfoScreen';
 import HomeScreen from '../screens/HomeScreen';
 import NotFoundScreen from '../screens/NotFoundScreen';
 import UsersScreen from "../screens/UsersScreen";
@@ -38,6 +39,9 @@ function RootNavigator () {
           title: "Username",
           headerBackTitleVisible: false,
         })} />
+      <Stack.Screen name="GroupInfoScreen"
+        component={GroupInfoScreen}
+      />
       <Stack.Screen name="UsersScreen" component={UsersScreen} options={{
         title: "Users",
       }} />

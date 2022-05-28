@@ -29,7 +29,7 @@ export default function UsersScreen ({ navigation }: RootTabScreenProps<'TabOne'
   const createChatRoom = async ({ users }: any) => {
     const authUser = await Auth.currentAuthenticatedUser();
     const dbUser = await DataStore.query(User, authUser.attributes.sub);
-    const newChatRoomData = { newMessages: 0, admin: dbUser };
+    const newChatRoomData = { newMessages: 0, Admin: dbUser };
     if (users.length > 1) {
       newChatRoomData.name = "New Group"
       newChatRoomData.imageUri = "https://notjustdev-dummy.s2.us-east-2.amazonaws.com/avatars.group.jpeg"
