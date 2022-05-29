@@ -20,7 +20,8 @@ export default function HomeScreen ({ navigation }: RootTabScreenProps<'TabOne'>
   }, [])
 
 
-  const onPress = () => {
+  const onPress = async () => {
+    await DataStore.clear();
     Auth.signOut();
   }
 

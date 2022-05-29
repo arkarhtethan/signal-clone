@@ -58,7 +58,10 @@ export default function ChatRoomScreen ({ navigation }: RootTabScreenProps<'TabO
         <SafeAreaView style={styles.page}>
             <FlatList
                 data={messages}
-                renderItem={({ item }) => <MessageComponent message={item} setAsMessageReply={() => setMessageReplyTo(item)} />}
+                renderItem={({ item }) => <MessageComponent
+                    message={item}
+                    setAsMessageReply={() => setMessageReplyTo(item)}
+                />}
                 inverted
             />
             <MessageInput messageReplyTo={messageReplyTo} chatRoom={chatRoom} removeMessageReplyTo={() => setMessageReplyTo(null)} />

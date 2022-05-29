@@ -1,3 +1,4 @@
+import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { Amplify, Auth, DataStore, Hub } from "aws-amplify";
 // @ts-ignore
 import { withAuthenticator } from 'aws-amplify-react-native';
@@ -77,7 +78,9 @@ function App () {
   } else {
     return (
       <SafeAreaProvider>
-        <Navigation colorScheme={colorScheme} />
+        <ActionSheetProvider>
+          <Navigation colorScheme={colorScheme} />
+        </ActionSheetProvider>
         <StatusBar />
       </SafeAreaProvider>
     );
